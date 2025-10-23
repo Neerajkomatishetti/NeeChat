@@ -1,103 +1,163 @@
-import Image from "next/image";
+"use client";
+
+import ChatInput from "@/components/chatinput";
+import { ChatMessage } from "@/components/chat-message";
+import { useEffect, useState, useRef } from "react";
+import MarkdownRenderer from "@/components/MarkDownRenderer";
+
+interface Message {
+  id: string;
+  content: string;
+  isUser: boolean;
+  isStreaming?: boolean;
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [content, setContent] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const fetchMarkdown = async () => {
+    try {
+      const response = await fetch("/api/readme");
+      const text = await response.text();
+      setContent(text);
+    } catch (err) {
+      console.error("Failed to load markdown:", err);
+    }
+  };
+
+  const sendMessage = async (userMessage: string) => {
+    // Add user message
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      content: userMessage,
+      isUser: true,
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setIsLoading(true);
+
+    // Add empty AI message for streaming
+    const aiMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      content: "",
+      isUser: false,
+      isStreaming: true,
+    };
+    setMessages((prev) => [...prev, aiMsg]);
+
+    try {
+      const response = await fetch("/api/v1/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      if (!response.body) {
+        throw new Error("No response body");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let aiContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              if (data.type === "chunk") {
+                aiContent += data.content;
+                // Update the AI message with new content
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === aiMsg.id ? { ...msg, content: aiContent } : msg
+                  )
+                );
+              } else if (data.type === "done") {
+                // Mark streaming as complete
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === aiMsg.id ? { ...msg, isStreaming: false } : msg
+                  )
+                );
+              } else if (data.type === "error") {
+                throw new Error(data.content);
+              }
+            } catch (parseError) {
+              console.error("Error parsing SSE data:", parseError);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      // Update the AI message with error
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMsg.id
+            ? {
+                ...msg,
+                content: "Sorry, there was an error processing your request.",
+                isStreaming: false,
+              }
+            : msg
+        )
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarkdown();
+  }, []);
+
+  return (
+    <>
+      <div className="flex relative flex-col items-center justify-center h-full w-full">
+        <div className="h-[80vh] max-h-[80vh] max-w-[70vw] py-6 pb-20 mb-3 px-8 w-full mask-y-from-98% scrollbar-thin overflow-y-scroll">
+          {messages.length === 0 ? (
+            <MarkdownRenderer>
+              {content.replace(/(\[.*?\])/g, "$1\n")}
+            </MarkdownRenderer>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message.content}
+                  isUser={message.isUser}
+                  isStreaming={message.isStreaming}
+                />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div className="w-[90%] md:w-[60%] sticky bottom-7">
+          <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
+        </div>
+      </div>
+    </>
   );
 }
