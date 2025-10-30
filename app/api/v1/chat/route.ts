@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { promises as fs } from "fs";
+import path from "path";
+import { randomUUID } from "crypto";
 
 // Initialize the Gemini API
 const genAI = new GoogleGenAI({
@@ -9,7 +12,7 @@ const genAI = new GoogleGenAI({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { message } = body;
+    const { message, chat_id } = body;
 
     if (!message) {
       return NextResponse.json(
@@ -28,6 +31,8 @@ export async function POST(req: NextRequest) {
     // Create a readable stream for the response
     const encoder = new TextEncoder();
 
+    let aiMSg = "";
+
     const stream = new ReadableStream({
       async start(controller) {
         try {
@@ -42,6 +47,7 @@ export async function POST(req: NextRequest) {
             if (chunk.candidates && chunk.candidates[0]?.content?.parts) {
               const chunkText = chunk.candidates[0].content.parts[0]?.text;
               if (chunkText) {
+                aiMSg += chunkText;
                 // Send the chunk as a server-sent event
                 const data = JSON.stringify({
                   type: "chunk",
@@ -52,6 +58,24 @@ export async function POST(req: NextRequest) {
               }
             }
           }
+
+          const filePath = path.join(process.cwd(), "history.json");
+          const history = JSON.parse(await fs.readFile(filePath, "utf-8"));
+          const chat_index = history.chats.findIndex((c) => c.id === chat_id);
+          const formattedDate = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
+          history.chats[chat_index].messages.push({
+            id: randomUUID(),
+            isUser: true,
+            content: message,
+            timestamp: formattedDate,
+          });
+          history.chats[chat_index].messages.push({
+            id: randomUUID(),
+            isUser: false,
+            content: aiMSg,
+            timestamp: formattedDate,
+          });
+          await fs.writeFile(filePath, JSON.stringify(history, null, 2));
 
           // Send completion signal
           const doneData = JSON.stringify({
@@ -73,7 +97,6 @@ export async function POST(req: NextRequest) {
         }
       },
     });
-
     // Return streaming response
     return new Response(stream, {
       headers: {

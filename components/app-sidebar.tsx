@@ -1,3 +1,5 @@
+"use client";
+
 import { Collapsible } from "@radix-ui/react-collapsible";
 import {
   Sidebar,
@@ -20,18 +22,66 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import historyData from '../history.json';
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { v4 as v4uuid } from "uuid";
+import { getSidebarInfo } from "@/app/actions";
+
+// Define a type for our chat objects for better type safety
+interface Chat {
+  id: string;
+  title: string;
+}
 
 export function AppSidebar() {
+  const [titles_And_Ids, setTitles_And_Ids] = useState<Chat[]>([]);
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Function to fetch the list of chats
+  const fetchTitlesAndIds = async () => {
+    setIsLoading(true);
+    const titles_And_Ids = await getSidebarInfo();
+    setTitles_And_Ids(titles_And_Ids);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchTitlesAndIds();
+  }, []);
+
+  const handleNewChat = async () => {
+    const chat_id = v4uuid();
+    const res = await fetch("/api/v1/c", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chat_id: chat_id,
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Re-fetch the chat list to include the new one
+      await fetchTitlesAndIds();
+      // Navigate to the new chat page
+      router.push(`/c/${chat_id}`);
+    } else {
+      alert("Failed to create chat");
+    }
+  };
 
   return (
     <Sidebar>
-      <SidebarHeader className="border border-b-border font-serif">NeeChat v0</SidebarHeader>
+      <SidebarHeader className="border border-b-border font-serif">
+        NeeChat v0
+      </SidebarHeader>
       <SidebarContent className="scrollbar-thin">
         <SidebarMenu>
           <SidebarMenuItem className="my-3">
-            <SidebarMenuButton>
+            <SidebarMenuButton onClick={handleNewChat}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -59,34 +109,43 @@ export function AppSidebar() {
               </SidebarGroupLabel>
               <CollapsibleContent>
                 <SidebarGroupContent>
-                  {historyData.chats.map(chat => (
-                    <SidebarMenuItem
-                      key={chat.id}
-                      className="hover:bg-sidebar-accent m-2 rounded-md"
-                    >
-                      <SidebarMenuButton>
-                        <span className="w-full overflow-x-hidden text-ellipsis">
-                          {chat.messages[0].role === "user"? chat.messages[0].content:""}
-                        </span>
-                      </SidebarMenuButton>
+                  {isLoading ? (
+                    <p className="p-2">Loading...</p>
+                  ) : (
+                    titles_And_Ids.map((chat) => (
+                      <SidebarMenuItem
+                        key={chat.id}
+                        className="hover:bg-sidebar-accent m-2 rounded-md"
+                      >
+                        <SidebarMenuButton
+                          onClick={() => {
+                            router.push(`/c/${chat.id}`);
+                          }}
+                        >
+                          <span className="w-full overflow-x-hidden text-ellipsis">
+                            {/* FIX: Use chat.title which is always available */}
+                            {chat.title}
+                          </span>
+                        </SidebarMenuButton>
 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <SidebarMenuAction showOnHover>
-                            <MoreHorizontal/>
-                          </SidebarMenuAction>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent side="right" align="start">
-                          <DropdownMenuItem>
-                            <span>Edit Project</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <span>Delete Project</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </SidebarMenuItem>
-                  ))}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <SidebarMenuAction showOnHover>
+                              <MoreHorizontal />
+                            </SidebarMenuAction>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent side="right" align="start">
+                            <DropdownMenuItem>
+                              <span>Rename</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-500">
+                              <span>Delete</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </SidebarMenuItem>
+                    ))
+                  )}
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>

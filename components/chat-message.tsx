@@ -6,6 +6,7 @@ interface ChatMessageProps {
   message: string;
   isUser: boolean;
   isStreaming?: boolean;
+  isLoading?: boolean;
 }
 
 export const ChatMessage = ({
@@ -25,7 +26,17 @@ export const ChatMessage = ({
         ) : (
           <div>
             <MarkdownRenderer>{message}</MarkdownRenderer>
-            {isStreaming && <span className="animate-pulse">|</span>}
+            {isStreaming && (
+              <div className="flex size-fit bg-secondary">
+                <div className="text-3xl transition-all animate-bounce">.</div>
+                <div className="text-3xl transition-all delay-100 animate-bounce">
+                  .
+                </div>
+                <div className="text-3xl transition-all delay-200 animate-bounce">
+                  .
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
