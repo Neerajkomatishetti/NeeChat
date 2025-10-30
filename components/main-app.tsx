@@ -2,7 +2,7 @@
 
 import ChatInput from "@/components/chatinput";
 import { ChatMessage } from "@/components/chat-message";
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import MarkdownRenderer from "@/components/MarkDownRenderer";
 
 interface Message {
