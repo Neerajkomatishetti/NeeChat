@@ -96,6 +96,102 @@
           "isUser": false,
           "content": "I am a large language model, trained by Google.",
           "timestamp": "30-10-2025"
+        },
+        {
+          "id": "9484f42c-d102-4db2-bf75-51c09a4dc24c",
+          "isUser": true,
+          "content": "how are you??",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "2197df08-941d-4582-b4db-97bb961fc7a1",
+          "isUser": false,
+          "content": "Thank you for asking!\n\nAs an AI, I don't have feelings or a physical body, so I don't experience \"being\" in the human sense like \"feeling good\" or \"feeling bad.\"\n\nHowever, I am functioning perfectly and ready to assist you with whatever you need! How are *you* doing today?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "76b97035-2bf7-4978-9ea0-04e3ae07629d",
+          "isUser": true,
+          "content": "rfgid",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "d90f242b-5e0c-4710-a550-8fc1e358f04a",
+          "isUser": false,
+          "content": "\"Rfgid\" does not appear to be a standard English word.\n\nIt might be a typo. Were you perhaps trying to type one of these words?\n*   **rigid**\n*   **frigid**\n*   **refuge**\n*   **fridge**\n\nOr is it a code, an abbreviation, or a word from another language? Could you please provide more context?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "ddd73324-5eba-4b1e-bb78-29a252c68933",
+          "isUser": true,
+          "content": "hi how are you",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "f713be36-4512-4e65-9a28-10dd33c3ea70",
+          "isUser": false,
+          "content": "Hi! As an AI, I don't have feelings, but I'm ready and functioning perfectly.\n\nHow are **you** doing today? And how can I help you?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "e69a4701-4c6f-4834-84c9-5a6a5b581ed3",
+          "isUser": true,
+          "content": "tell about useDeferredValue?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "09d7cada-1903-4309-b28d-7332023869e4",
+          "isUser": false,
+          "content": "`useDeferredValue` is a React Hook introduced in React 18 that allows you to **defer the re-rendering of a non-urgent part of your UI**, prioritizing more urgent updates (like user input). It's a powerful tool for improving perceived performance and responsiveness, especially in applications with expensive renders that might block the main thread.\n\n### The Problem It Solves\n\nImagine you have a search input where, as the user types, a large and complex list of results is immediately filtered and displayed.\n\n1.  **User types a character.**\n2.  **Input state updates (urgent).**\n3.  **The entire component re-renders.**\n4.  **The expensive list filtering/rendering begins.**\n5.  **While the list is rendering, the UI might freeze or become sluggish, making typing feel unresponsive.**\n\nReact's default rendering is synchronous. When a state update triggers a re-render, React processes that render before anything else. If that render is expensive, it can block the browser's main thread, leading to a poor user experience.\n\n### How `useDeferredValue` Works\n\n`useDeferredValue` essentially gives you a **\"stale\" version of a value** that React can update in the background with lower priority.\n\n1.  You give `useDeferredValue` a `value` (e.g., the current search input).\n2.  It returns a `deferredValue`.\n3.  When the original `value` changes:\n    *   The `deferredValue` initially **remains the old value**.\n    *   React schedules a **non-blocking transition** to update the `deferredValue` to the new `value`. This update happens when the browser is idle and no urgent tasks are pending.\n    *   If another urgent update occurs (like the user typing another character), React prioritizes that urgent update, potentially interrupting and restarting the deferred update for the `deferredValue`.\n    *   Once the system is idle, the `deferredValue` eventually \"catches up\" to the latest `value`.\n\n**In essence, it tells React:** \"This `value` is important for the UI, but if updating the part of the UI that uses this `value` is expensive, you can show the *old* value for a bit while you process the new one in the background. Prioritize immediate user interactions over updating this part.\"\n\n### Analogy\n\nThink of it like a chef taking orders:\n\n*   **Urgent Order (User Input):** A customer asks for their main course. The chef immediately stops what they're doing and works on that.\n*   **Non-Urgent Update (Deferred Value):** A customer also asked for a fancy garnish on their dish. The chef notes it down, but if more main course orders come in, they'll prioritize those. The garnish can wait until things are quiet. The customer might see the dish *without* the garnish for a moment, but eventually, it will appear.\n\n### Signature\n\n```jsx\nconst deferredValue = useDeferredValue(value, [initialValue]);\n```\n\n*   `value`: The value you want to defer. This is typically a state variable or a prop.\n*   `initialValue` (optional): The value to use before the first render completes. If omitted, `deferredValue` will be `value` during the initial render. This is useful if `value` might be `undefined` initially, or if you want to provide a specific placeholder.\n\n### Key Characteristics\n\n*   **Non-blocking:** The UI remains responsive because urgent updates are prioritized.\n*   **Automatic Prioritization:** React automatically handles the scheduling and prioritization of updates.\n*   **Stale Data:** You temporarily display stale data (`deferredValue`) while the fresh data (`value`) is being processed.\n*   **Does not prevent renders:** It just defers *when* a part of the UI updates with the new value. The component receiving `value` still re-renders immediately.\n*   **Works with props:** It's especially useful when a parent component passes a prop down to a child, and rendering that child is expensive.\n\n### When to Use It\n\n*   **Search/Filter Inputs with Expensive Results:** This is the canonical use case. As the user types, the input field updates immediately, but the costly filtering/display of results is delayed.\n*   **Interactive Charts/Graphs:** If manipulating controls triggers an expensive re-render of a data visualization, deferring the chart update can keep the controls responsive.\n*   **Anywhere you have a dual-priority UI:** One part of the UI needs to be immediately responsive (e.g., a text input), while another part relies on that input but can tolerate a slight delay in updating (e.g., a complex data table, a live preview, a large image gallery).\n*   When a component receives a prop that changes frequently and causes expensive rendering, but immediate visual update of the prop's consumer isn't critical.\n\n### When NOT to Use It\n\n*   **For all performance issues:** Profile your application first. `useDeferredValue` is for specific scenarios involving responsiveness and expensive renders.\n*   **As a general-purpose debounce:** While it can feel similar, `useDeferredValue` is about rendering prioritization within React's concurrent mode, not just delaying a function call. If you need to fetch data after a value stabilizes, `useEffect` with a custom debounce might still be more appropriate.\n*   **When you absolutely need the latest data immediately:** If showing stale data is unacceptable, `useDeferredValue` is not the solution.\n*   **If the expensive part is a side effect (e.g., network request):** For side effects, `useEffect` is still the primary tool. If you want to *start* a side effect in a non-blocking way, you'd typically use `useTransition` with `startTransition`.\n\n### Relationship with `useTransition` / `startTransition`\n\n`useDeferredValue` and `useTransition` are closely related and both leverage React's concurrent rendering features:\n\n*   **`useTransition` (or `startTransition`):** Allows you to *mark* an update as a \"transition,\" meaning it's non-urgent and can be interrupted by higher-priority updates. You wrap the state update that causes the slow render within `startTransition`.\n*   **`useDeferredValue`:** Provides a way to defer a *value* itself, particularly useful when the state update originates *outside* the component that consumes the deferred value (e.g., a parent passes a prop to a child, and the child is the one doing the expensive work based on that prop). It essentially creates its own internal transition for updating the deferred value.\n\nYou can often achieve similar results with both, but they have slightly different use cases. `useDeferredValue` is often simpler when you just need to hold off on updating a specific value.\n\n### Code Example\n\nLet's illustrate with a search input and a slow-rendering list component.\n\n```jsx\nimport React, { useState, useDeferredValue } from 'react';\n\n// A component that simulates a slow render\nfunction SlowList({ text }) {\n  const startTime = performance.now();\n  const items = [];\n  // Simulate heavy computation/rendering\n  for (let i = 0; i < 2000; i++) {\n    items.push(<div key={i}>{text} Item {i}</div>);\n  }\n  const endTime = performance.now();\n  console.log(`SlowList rendered for \"${text}\" in ${endTime - startTime} ms`);\n  \n  return (\n    <div style={{ border: '1px solid gray', padding: '10px', marginTop: '10px', maxHeight: '300px', overflowY: 'auto' }}>\n      <h3>Results for \"{text}\"</h3>\n      {items}\n    </div>\n  );\n}\n\nfunction App() {\n  const [inputValue, setInputValue] = useState('');\n  \n  // Defer the value that the SlowList component will use\n  const deferredInputValue = useDeferredValue(inputValue);\n\n  const handleChange = (e) => {\n    setInputValue(e.target.value);\n  };\n\n  return (\n    <div>\n      <h1>Search Example with useDeferredValue</h1>\n      <input\n        type=\"text\"\n        value={inputValue}\n        onChange={handleChange}\n        placeholder=\"Type to search...\"\n        style={{ padding: '10px', fontSize: '1.2em', width: '300px' }}\n      />\n      <p>\n        **Current Input (Urgent):** <code>{inputValue}</code>\n      </p>\n      <p>\n        **Deferred Value (Non-Urgent):** <code>{deferredInputValue}</code>\n      </p>\n      \n      {/* \n        The SlowList uses the deferredInputValue. \n        When inputValue changes, deferredInputValue will lag behind,\n        allowing the input field to remain responsive.\n      */}\n      <SlowList text={deferredInputValue} />\n      \n      {/*\n        To compare, uncomment the line below and comment out the above SlowList.\n        You'll notice typing becomes very sluggish because the list updates immediately.\n      */}\n      {/* <SlowList text={inputValue} /> */}\n    </div>\n  );\n}\n\nexport default App;\n```\n\n**How to test:**\n\n1.  Run this code.\n2.  Open your browser's console to see the `SlowList rendered...` logs.\n3.  Start typing rapidly in the input field.\n4.  Notice how the \"Current Input\" updates instantly, but \"Deferred Value\" lags slightly, and the `SlowList` only re-renders when you pause typing. The input remains smooth.\n5.  If you swap `deferredInputValue` for `inputValue` in `SlowList`, you'll immediately feel the lag as you type, demonstrating the problem `useDeferredValue` solves.\n\n### Summary\n\n`useDeferredValue` is a powerful React 18 hook for optimizing perceived performance by allowing you to prioritize urgent UI updates (like user input) over less urgent, potentially expensive, updates. It provides a \"stale\" version of a value that eventually catches up, ensuring a smoother and more responsive user experience.",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "1336e392-2371-49f8-a2a8-9d2006a97af6",
+          "isUser": true,
+          "content": "hi",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "24e14a79-bcc6-4408-9b45-a3480d4e37f4",
+          "isUser": false,
+          "content": "Hello! How can I help you today?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "c68aab9d-523a-487c-8bd0-83620b599e1e",
+          "isUser": true,
+          "content": "hi",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "5bbc0499-d4e7-4a79-a3fd-1396c34517ef",
+          "isUser": false,
+          "content": "Hi there! How can I help you today?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "dc2057af-d867-4010-91d0-43544f56b63b",
+          "isUser": true,
+          "content": "hi",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "584d98ed-8fa3-4b44-a4b8-9d40e476008a",
+          "isUser": false,
+          "content": "Hi there! How can I help you today?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "22895c5f-b1ab-43ed-a655-c35e1cf29d5e",
+          "isUser": true,
+          "content": "hi",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "1ac0e7a5-59b0-408a-875a-0f1ea8faf5e6",
+          "isUser": false,
+          "content": "Hi there! How can I help you today?",
+          "timestamp": "30-10-2025"
         }
       ]
     },
@@ -156,6 +252,54 @@
           "isUser": false,
           "content": "Server Actions are a powerful feature in Next.js that allow you to run server-side code directly from your React components, eliminating the need for explicit API routes (`app/api` folder) for many common scenarios like form submissions and data mutations.\n\nLet's break down how to use them, where to place them, and what your folder structure should look like.\n\n---\n\n## 1. What are Server Actions?\n\nAt their core, Server Actions are asynchronous functions that execute exclusively on the server. They are triggered by events on the client, most commonly form submissions.\n\n**Key characteristics:**\n\n*   They are marked with the `'use server'` directive at the top of the file or at the top of the function itself.\n*   They can directly interact with your database, file system, or any other server-side resource.\n*   They integrate seamlessly with React's `form` elements (`action` prop) and provide hooks like `useFormStatus`, `useFormState`, and `useOptimistic` for enhancing the user experience.\n*   They reduce client-side JavaScript bundle size because the server-side logic is never sent to the client.\n\n## 2. How to Use Server Actions\n\nYou can define Server Actions in two main ways:\n\n### a) Within a Component (Directly in the same file)\n\nThis is suitable for actions that are highly specific to a single component and unlikely to be reused.\n\n```tsx\n// app/page.tsx\n'use client'; // This component is a Client Component\n\nimport { useState } from 'react';\n\nexport default function MyForm() {\n  const [message, setMessage] = useState('');\n\n  // Define the Server Action directly within the component\n  // The 'use server' directive can be at the top of the function\n  async function submitForm(formData: FormData) {\n    'use server'; // This function will run on the server\n\n    const name = formData.get('name') as string;\n    const email = formData.get('email') as string;\n\n    // Simulate a database operation or API call\n    await new Promise((resolve) => setTimeout(resolve, 1000));\n\n    if (!name || !email) {\n      console.error('Validation failed: Name and email are required.');\n      return { status: 'error', message: 'Name and email are required.' };\n    }\n\n    console.log(`Server received: Name - ${name}, Email - ${email}`);\n\n    // You can perform database operations here, e.g., prisma.user.create(...)\n    // const newUser = await prisma.user.create({ data: { name, email } });\n\n    return { status: 'success', message: `User ${name} created successfully!` };\n  }\n\n  // The client-side part of the component\n  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {\n    event.preventDefault();\n    setMessage('Submitting...');\n\n    // Extract FormData from the form event\n    const formData = new FormData(event.currentTarget);\n    const result = await submitForm(formData); // Call the server action\n\n    if (result.status === 'success') {\n      setMessage(result.message);\n      event.currentTarget.reset(); // Clear the form\n    } else {\n      setMessage(`Error: ${result.message}`);\n    }\n  };\n\n  return (\n    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>\n      <h1>Sign Up</h1>\n      <form onSubmit={handleSubmit}>\n        <div style={{ marginBottom: '10px' }}>\n          <label htmlFor=\"name\" style={{ display: 'block', marginBottom: '5px' }}>\n            Name:\n          </label>\n          <input\n            type=\"text\"\n            id=\"name\"\n            name=\"name\"\n            required\n            style={{ width: '100%', padding: '8px' }}\n          />\n        </div>\n        <div style={{ marginBottom: '10px' }}>\n          <label htmlFor=\"email\" style={{ display: 'block', marginBottom: '5px' }}>\n            Email:\n          </label>\n          <input\n            type=\"email\"\n            id=\"email\"\n            name=\"email\"\n            required\n            style={{ width: '100%', padding: '8px' }}\n          />\n        </div>\n        <button type=\"submit\" style={{ padding: '10px 15px', background: 'blue', color: 'white', border: 'none', cursor: 'pointer' }}>\n          Submit\n        </button>\n      </form>\n      {message && <p>{message}</p>}\n    </div>\n  );\n}\n```\n\n**Note:** While you *can* define a server action inside a client component, the more common and often preferred way is to pass it directly to the form's `action` prop or use `useFormState`. When defined *outside* the component (in a separate file, see below), you can also pass it directly to the `action` prop.\n\n### b) In a Separate File (Recommended for Reusability and Organization)\n\nThis is the preferred approach for most Server Actions as it promotes better organization, reusability, and testability.\n\n1.  **Create a dedicated file for your actions:**\n    *   A common convention is to create a top-level `actions/` folder (or `lib/actions/`).\n    *   Example: `actions/user.ts` or `actions/post.ts`.\n\n2.  **Define your Server Action(s) in this file:**\n    *   Place the `'use server'` directive at the **top of the file**. This makes all exports from this file Server Actions.\n    *   Export the functions you want to use.\n\n```typescript\n// actions/post.ts\n'use server'; // This directive applies to all exports in this file\n\nimport { revalidatePath } from 'next/cache';\nimport { redirect } from 'next/navigation';\n\nexport async function createPost(formData: FormData) {\n  const title = formData.get('title') as string;\n  const content = formData.get('content') as string;\n\n  // Basic server-side validation\n  if (!title || !content) {\n    console.error('Validation failed: Title and content are required.');\n    return { status: 'error', message: 'Title and content are required.' };\n  }\n\n  // Simulate a database operation\n  await new Promise((resolve) => setTimeout(resolve, 1500));\n  console.log(`Server received new post: Title - \"${title}\", Content - \"${content}\"`);\n\n  // In a real application, you would interact with your database here:\n  // const newPost = await prisma.post.create({ data: { title, content } });\n\n  // Revalidate the cache for the home page (where posts might be listed)\n  revalidatePath('/');\n\n  // Optionally, redirect the user after a successful action\n  // redirect('/success-page');\n\n  return { status: 'success', message: 'Post created successfully!' };\n}\n\nexport async function deletePost(id: string) {\n  // Simulate deletion\n  await new Promise((resolve) => setTimeout(resolve, 500));\n  console.log(`Server deleted post with ID: ${id}`);\n  revalidatePath('/'); // Revalidate any pages displaying posts\n  return { status: 'success', message: `Post ${id} deleted.` };\n}\n```\n\n3.  **Use the Server Action in your component:**\n\n```tsx\n// app/page.tsx\n'use client';\n\nimport { useRef } from 'react';\nimport { useFormState, useFormStatus } from 'react-dom'; // Hooks for Server Actions\nimport { createPost } from '@/actions/post'; // Import your Server Action\n\n// A simple component to show status (optional)\nfunction SubmitButton() {\n  const { pending } = useFormStatus();\n  return (\n    <button type=\"submit\" disabled={pending} style={{ padding: '10px 15px', background: pending ? 'gray' : 'green', color: 'white', border: 'none', cursor: 'pointer' }}>\n      {pending ? 'Submitting...' : 'Create Post'}\n    </button>\n  );\n}\n\nexport default function CreatePostPage() {\n  // useFormState takes the action function and an initial state\n  // It returns the current state and a new action function to use with the form.\n  const [state, formAction] = useFormState(createPost, { status: '', message: '' });\n  const formRef = useRef<HTMLFormElement>(null);\n\n  // You can use useEffect to handle success/error messages, clear forms, etc.\n  // React's form system ensures the state is updated when the action finishes.\n  // If state.status changes to 'success', we clear the form.\n  if (state.status === 'success' && formRef.current) {\n    formRef.current.reset(); // Clear the form fields\n    // You might want to show a temporary success message via a toast/alert\n    state.status = ''; // Reset status to prevent re-clearing on re-render\n  }\n\n\n  return (\n    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', border: '1px solid #ccc', borderRadius: '8px' }}>\n      <h1>Create New Post</h1>\n      {/* Use the formAction returned by useFormState */}\n      <form ref={formRef} action={formAction}>\n        <div style={{ marginBottom: '15px' }}>\n          <label htmlFor=\"title\" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>\n            Post Title:\n          </label>\n          <input\n            type=\"text\"\n            id=\"title\"\n            name=\"title\"\n            required\n            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}\n          />\n        </div>\n        <div style={{ marginBottom: '15px' }}>\n          <label htmlFor=\"content\" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>\n            Content:\n          </label>\n          <textarea\n            id=\"content\"\n            name=\"content\"\n            required\n            rows={5}\n            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}\n          />\n        </div>\n        <SubmitButton /> {/* Shows pending state */}\n      </form>\n\n      {/* Display messages based on the state */}\n      {state.message && (\n        <p style={{\n          marginTop: '20px',\n          padding: '10px',\n          borderRadius: '4px',\n          backgroundColor: state.status === 'success' ? '#d4edda' : '#f8d7da',\n          color: state.status === 'success' ? '#155724' : '#721c24',\n          border: `1px solid ${state.status === 'success' ? '#c3e6cb' : '#f5c6cb'}`\n        }}>\n          {state.message}\n        </p>\n      )}\n    </div>\n  );\n}\n```\n\n---\n\n## 3. Folder Structure Recommendations\n\nServer Actions are server-side code, not directly related to client-side routing (`app` folder's primary function). Therefore, it's generally recommended to place them **outside** the `app` folder, but at the root of your project or within a dedicated `lib` folder.\n\nHere are common and recommended folder structures:\n\n### a) Dedicated `actions` Folder (Most Common)\n\nThis is very explicit and easy to understand.\n\n```\nyour-nextjs-project/\n├── app/                  # Next.js App Router specific files (pages, layouts, components)\n│   ├── page.tsx\n│   ├── layout.tsx\n│   └── (dashboard)/\n│       └── page.tsx\n├── actions/              # Dedicated folder for Server Actions\n│   ├── user.ts           # User-related actions (e.g., createUser, updateUser)\n│   ├── post.ts           # Post-related actions (e.g., createPost, deletePost)\n│   └── auth.ts           # Authentication-related actions (e.g., signIn, signUp)\n├── components/           # Reusable Client/Server Components\n│   ├── ui/\n│   │   └── Button.tsx\n│   └── Header.tsx\n├── lib/                  # General utility functions, database clients, etc.\n│   ├── db.ts             # Database connection (Prisma client, etc.)\n│   └── utils.ts          # Generic helper functions\n├── public/               # Static assets\n└── tsconfig.json\n└── next.config.js\n└── package.json\n```\n\n**Why this structure?**\n\n*   **Clarity:** Clearly separates Server Action logic from UI components and pages.\n*   **Organization:** Keeps related server-side functionalities grouped together.\n*   **Reusability:** Actions defined here can be imported and used by any component (client or server) within your `app` folder.\n*   **Testability:** Easier to unit test your actions in isolation.\n\n### b) Within `lib/actions`\n\nThis is also a very good option, especially if you already have a `lib` folder for other server-side utilities (like database connections, validation schemas, etc.).\n\n```\nyour-nextjs-project/\n├── app/\n│   ├── page.tsx\n│   └── (dashboard)/\n│       └── page.tsx\n├── components/\n│   └── ui/\n│       └── Button.tsx\n├── lib/                  # General library for backend concerns\n│   ├── db.ts             # Database connection\n│   ├── utils.ts          # Generic helper functions\n│   └── actions/          # Subfolder for Server Actions\n│       ├── user.ts\n│       ├── post.ts\n│       └── auth.ts\n├── public/\n└── tsconfig.json\n└── next.config.js\n└── package.json\n```\n\n**Why this structure?**\n\n*   **Cohesion:** Groups all server-side logic under a single `lib` umbrella.\n*   **Scalability:** Good for larger projects where `actions` might be just one part of your overall backend logic.\n\n### c) Co-located within `app` (Less Recommended for Standalone Actions)\n\nWhile technically possible, defining actions directly inside `app` folders (e.g., `app/dashboard/actions.ts`) can blur the lines between routing/UI concerns and server-side logic, making things less clear for reusable actions.\n\n*   **When it might make sense:** For actions that are *very* specific to a particular route segment and unlikely to be used elsewhere. For example, `app/settings/profile/actions.ts` for actions related only to the profile settings page.\n*   **The `'use server'` directive:** Remember, the directive itself is what makes it a server action, not its location.\n\n```\n// Example: Co-located server action (less common for global actions)\n// app/dashboard/profile/actions.ts\n'use server';\n\nexport async function updateProfile(formData: FormData) {\n  // ...\n}\n```\n\n---\n\n## Conclusion\n\nFor most projects, using a **top-level `actions/` folder** or a **`lib/actions/` subfolder** is the most robust and maintainable approach for organizing your Next.js Server Actions. This promotes a clear separation of concerns, making your codebase easier to understand, manage, and scale.",
           "timestamp": "30-10-2025"
+        },
+        {
+          "id": "939abcc4-8946-40aa-9c6b-7d479e038fe9",
+          "isUser": true,
+          "content": "hi",
+          "timestamp": "01-11-2025"
+        },
+        {
+          "id": "1411fbda-35e8-4696-8292-21aa3e8922f4",
+          "isUser": false,
+          "content": "Hi there! How can I help you today?",
+          "timestamp": "01-11-2025"
+        },
+        {
+          "id": "cb223abd-ef32-4b34-806b-c2ae1de7e16c",
+          "isUser": true,
+          "content": "hi",
+          "timestamp": "01-11-2025"
+        },
+        {
+          "id": "71d4873a-894f-4fbc-ac62-809ff9d1dc81",
+          "isUser": false,
+          "content": "Hello! How can I help you today?",
+          "timestamp": "01-11-2025"
+        },
+        {
+          "id": "4a908d85-78c7-47d9-884e-d27839365b4e",
+          "isUser": true,
+          "content": "hihih\n\nhow ar you?\n\n\nefdjd",
+          "timestamp": "01-11-2025"
+        },
+        {
+          "id": "025e7326-d94c-4e7e-8c62-60319d097f56",
+          "isUser": false,
+          "content": "Hi there! I'm doing great, thank you for asking!\n\nI also noticed \"efdjd.\" Was there something specific you wanted to ask or discuss related to that, or was it a typo?",
+          "timestamp": "01-11-2025"
+        },
+        {
+          "id": "0a194444-153d-419a-989f-02f9e611f687",
+          "isUser": true,
+          "content": "who is the father of the nation",
+          "timestamp": "01-11-2025"
+        },
+        {
+          "id": "c13f1cb6-0123-4be2-9e9f-c459f2ec1763",
+          "isUser": false,
+          "content": "The most widely recognized person referred to as \"Father of the Nation\" globally is **Mahatma Gandhi** for India.\n\nHowever, the title \"Father of the Nation\" is specific to individual countries, and many nations have their own revered historical figures who are given this honor for their role in founding or liberating their country.\n\nHere are a few other examples:\n\n*   **United States:** George Washington\n*   **China:** Sun Yat-sen\n*   **Turkey:** Mustafa Kemal Atatürk\n*   **South Africa:** Nelson Mandela (often called a \"founding father\" or \"father of the new nation\")\n*   **Pakistan:** Muhammad Ali Jinnah\n*   **Bangladesh:** Sheikh Mujibur Rahman\n*   **Indonesia:** Sukarno\n\nIf you have a particular country in mind, I can tell you who its \"Father of the Nation\" is!",
+          "timestamp": "01-11-2025"
         }
       ]
     },
@@ -379,6 +523,18 @@
           "id": "05eb2d6d-3437-451d-a456-0d26f5551a4e",
           "isUser": false,
           "content": "Hi there! How can I help you today?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "363bba69-7052-4caf-8207-9e2febe0325e",
+          "isUser": true,
+          "content": "what is your name?",
+          "timestamp": "30-10-2025"
+        },
+        {
+          "id": "98974ed7-206e-4ccc-af38-29c1ad5f4d55",
+          "isUser": false,
+          "content": "I do not have a name. I am a large language model, trained by Google.",
           "timestamp": "30-10-2025"
         }
       ]

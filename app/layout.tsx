@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
+import NavbarRightColumn from "@/components/NavbarRightColumn";
 
 export const metadata: Metadata = {
   title: "NeeChatV0",
@@ -29,12 +30,9 @@ export default function RootLayout({
           <SidebarProvider defaultOpen={true}>
             <AppSidebar />
             <main className="flex flex-col w-full">
-              <nav className="flex sticky top-0 w-full items-center h-fit py-1 justify-between p-3">
+              <nav className="flex sticky top-0 w-full z-10 items-center h-fit py-1 justify-between p-3">
                 <SidebarTrigger />
-                <div className="flex [&>*]:m-1">
-                  <Button className="rounded-full">SignIn</Button>
-                  <ModeToggle />
-                </div>
+                <NavbarRightColumn />
               </nav>
               {children}
             </main>

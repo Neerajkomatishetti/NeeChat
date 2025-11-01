@@ -13,6 +13,7 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "./ui/sidebar";
 import { CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { ChevronDown, MoreHorizontal } from "lucide-react";
@@ -38,6 +39,7 @@ export function AppSidebar() {
   const [titles_And_Ids, setTitles_And_Ids] = useState<Chat[]>([]);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const { toggleSidebar } = useSidebar();
 
   // Function to fetch the list of chats
   const fetchTitlesAndIds = async () => {
@@ -66,6 +68,7 @@ export function AppSidebar() {
     if (data.success) {
       // Re-fetch the chat list to include the new one
       await fetchTitlesAndIds();
+      toggleSidebar();
       // Navigate to the new chat page
       router.push(`/c/${chat_id}`);
     } else {
@@ -119,6 +122,7 @@ export function AppSidebar() {
                       >
                         <SidebarMenuButton
                           onClick={() => {
+                            toggleSidebar();
                             router.push(`/c/${chat.id}`);
                           }}
                         >

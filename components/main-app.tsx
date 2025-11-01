@@ -136,15 +136,15 @@ export default function Main({ chat_id }: { chat_id: string | null }) {
 
   return (
     <>
-      <div className="flex relative flex-col items-center justify-center h-full w-full">
-        <div className="h-[80vh] max-h-[80vh] w-full sm:max-w-[70vw] py-6 px-2 pb-20 mb-3 px-8mask-y-from-98% scrollbar-thin overflow-y-scroll">
+      <div className="flex relative flex-col items-center h-full w-full">
+        <div className=" h-[70vh] sm:h-[80vh] max-h-[70vh] w-full sm:max-w-[70vw] py-6 px-2 pb-20 mb-3 mask-y-from-98% scrollbar-thin rounded-lg overflow-y-scroll">
           {messages.length === 0 ? (
             <MarkdownRenderer>
               {content.replace(/(\[.*?\])/g, "$1\n")}
             </MarkdownRenderer>
           ) : (
             <div className="space-y-4">
-              {messages.map((message) => (
+              {messages.map((message: Message) => (
                 <ChatMessage
                   key={message.id}
                   message={message.content}
@@ -156,7 +156,7 @@ export default function Main({ chat_id }: { chat_id: string | null }) {
             </div>
           )}
         </div>
-        <div className="w-[90%] md:w-[60%] sticky bottom-7">
+        <div className="w-[90%] h-fit md:w-[60%] z-20 sticky bottom-7">
           <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
         </div>
       </div>

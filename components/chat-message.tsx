@@ -6,7 +6,6 @@ interface ChatMessageProps {
   message: string;
   isUser: boolean;
   isStreaming?: boolean;
-  isLoading?: boolean;
 }
 
 export const ChatMessage = ({

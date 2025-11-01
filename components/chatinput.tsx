@@ -43,7 +43,7 @@ export const ChatInput = ({
 
   return (
     <>
-      <div className="flex h-fit min-h-14 items-end-safe p-3 [&>*]:mx-2 rounded-[20px] justify-around bg-secondary w-full">
+      <div className="flex h-fit min-h-14 items-end-safe p-3 z-20 [&>*]:mx-2 rounded-[20px] justify-around bg-secondary w-full">
         <div className="flex w-fit h-[40px] justify-center ">
           <DropdownMenu>
             <DropdownMenuTrigger className="outline-none h-full">
@@ -84,7 +84,7 @@ export const ChatInput = ({
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyPress}
           disabled={isLoading}
-          style={{lineHeight:"40px"}}
+          style={{ lineHeight: "40px" }}
         />
 
         <div className="flex w-fit h-[40px] justify-center">
