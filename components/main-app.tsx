@@ -156,7 +156,7 @@ export default function Main({ chat_id }: { chat_id: string | null }) {
             </div>
           )}
         </div>
-        <div className="w-[90%] h-fit md:w-[60%] z-20 sticky bottom-7">
+        <div className="w-[90%] h-fit md:w-[60%] z-20 sticky bottom-auto">
           <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
         </div>
       </div>

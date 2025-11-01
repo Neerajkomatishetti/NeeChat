@@ -78,7 +78,7 @@ export const ChatInput = ({
           id="chatinput"
           minRows={1}
           maxRows={3}
-          placeholder="Ask Neechat Anything!"
+          placeholder="Ask Neechat!"
           className="outline-none w-full focus:outline-none scrollbar-hidden h-fit"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
