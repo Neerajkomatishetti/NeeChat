@@ -17,14 +17,14 @@ export async function POST(req: NextRequest) {
     if (!message) {
       return NextResponse.json(
         { error: "Message is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
         { error: "Gemini API key not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -62,14 +62,16 @@ export async function POST(req: NextRequest) {
           const filePath = path.join(process.cwd(), "history.json");
           const history = JSON.parse(await fs.readFile(filePath, "utf-8"));
           const chat_index = history.chats.findIndex((c) => c.id === chat_id);
-          const formattedDate = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
-          history.chats[chat_index].messages.push({
+          const formattedDate = new Date()
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, "-");
+          history.chats[chat_index].messages?.push({
             id: randomUUID(),
             isUser: true,
             content: message,
             timestamp: formattedDate,
           });
-          history.chats[chat_index].messages.push({
+          history.chats[chat_index].messages?.push({
             id: randomUUID(),
             isUser: false,
             content: aiMSg,
@@ -115,7 +117,7 @@ export async function POST(req: NextRequest) {
         error: "Failed to generate response",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -3,8 +3,6 @@ import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Button } from "@/components/ui/button";
 import NavbarRightColumn from "@/components/NavbarRightColumn";
 
 export const metadata: Metadata = {
@@ -23,19 +21,13 @@ export default function RootLayout({
       <body className="antialiased ">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
           <SidebarProvider defaultOpen={true}>
             <AppSidebar />
-            <main className="flex flex-col w-full">
-              <nav className="flex sticky top-0 w-full z-10 items-center h-fit py-1 justify-between p-3">
-                <SidebarTrigger />
-                <NavbarRightColumn />
-              </nav>
-              {children}
-            </main>
+            <main className="flex relative flex-col w-full">{children}</main>
           </SidebarProvider>
         </ThemeProvider>
       </body>

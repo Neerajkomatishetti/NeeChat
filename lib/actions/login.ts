@@ -2,8 +2,9 @@
 "use server";
 import { supabase } from "@/lib/supabase";
 
-export const login = async (email: string) => {
+export default async function login(email, password) {
   const { data, error } = await supabase.auth.signInWithOtp({ email });
+  console.log(password);
 
   if (error) {
     console.error(error);
@@ -12,4 +13,4 @@ export const login = async (email: string) => {
 
   // TOD: Implement login logic
   return { success: true, error: null };
-};
+}

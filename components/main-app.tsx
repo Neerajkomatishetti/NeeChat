@@ -4,6 +4,12 @@ import ChatInput from "@/components/chatinput";
 import { ChatMessage } from "@/components/chat-message";
 import { useEffect, useState, useRef, useCallback } from "react";
 import MarkdownRenderer from "@/components/MarkDownRenderer";
+import { SidebarTrigger } from "./ui/sidebar";
+import NavbarRightColumn from "./NavbarRightColumn";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { useToggleModal } from "@/hooks/toggleModal";
+import login from "@/lib/actions/login";
 
 interface Message {
   id: string;
@@ -17,6 +23,8 @@ export default function Main({ chat_id }: { chat_id: string | null }) {
   const [messages, setMessages] = useState<Message[] | []>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { openModal, toggleModal } = useToggleModal();
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -137,11 +145,84 @@ export default function Main({ chat_id }: { chat_id: string | null }) {
   return (
     <>
       <div className="flex relative flex-col items-center h-full w-full">
+        {openModal && (
+          <div className="flex items-center justify-center absolute top-0 right-0 left-auto bottom-0 w-[100vw] scroll-bar-hidden h-[100vh] margin-auto bg-black/10 backdrop-blur-sm z-100">
+            <div className="flex flex-col items-center-safe w-auto gap-1.5 border inset-shadow-sm box-border border-solid p-2 border-primary">
+              <button
+                className="flex w-full justify-end-safe"
+                onClick={() => {
+                  toggleModal(false);
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18 18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+              <Input
+                className="bg-secondary rounded-none"
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    email: e.target.value,
+                  })
+                }
+              />
+              <Input
+                className="bg-secondary rounded-none"
+                type="Password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    password: e.target.value,
+                  })
+                }
+              />
+              <Button
+                className="w-full rounded-none inset-shadow-amber-600"
+                onClick={() => {
+                  login(formData.email, formData.password);
+                  setFormData({
+                    email: "",
+                    password: "",
+                  });
+                }}
+              >
+                Login
+              </Button>
+              <h2>{"or"}</h2>
+              <Button className="w-full rounded-none" onClick={() => {}}>
+                Sign Up
+              </Button>
+            </div>
+          </div>
+        )}
+        <nav className="flex sticky top-0 w-full z-10 items-center h-fit py-1 justify-between p-3">
+          <SidebarTrigger />
+          <NavbarRightColumn openModal={openModal} toggleModal={toggleModal} />
+        </nav>
         <div className=" h-[70vh] sm:h-[80vh] max-h-[70vh] w-full sm:max-w-[70vw] py-6 px-2 pb-20 mb-3 mask-y-from-98% scrollbar-thin rounded-lg overflow-y-scroll">
           {messages.length === 0 ? (
-            <MarkdownRenderer>
-              {content.replace(/(\[.*?\])/g, "$1\n")}
-            </MarkdownRenderer>
+            <div className="p-2 m-2">
+              <MarkdownRenderer>
+                {content.replace(/(\[.*?\])/g, "$1\n")}
+              </MarkdownRenderer>
+            </div>
           ) : (
             <div className="space-y-4">
               {messages.map((message: Message) => (
@@ -156,7 +237,7 @@ export default function Main({ chat_id }: { chat_id: string | null }) {
             </div>
           )}
         </div>
-        <div className="w-[90%] h-fit md:w-[60%] z-20 sticky bottom-auto">
+        <div className="w-[90%] h-fit md:w-[60%] z-10 sticky bottom-auto">
           <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
         </div>
       </div>

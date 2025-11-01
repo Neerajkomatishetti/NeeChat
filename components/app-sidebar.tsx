@@ -77,7 +77,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
+    <Sidebar className="backdrop-blur-sm">
       <SidebarHeader className="border border-b-border font-serif">
         NeeChat v0
       </SidebarHeader>
@@ -118,7 +118,7 @@ export function AppSidebar() {
                     titles_And_Ids.map((chat) => (
                       <SidebarMenuItem
                         key={chat.id}
-                        className="hover:bg-sidebar-accent m-2 rounded-md"
+                        className="hover:bg-sidebar-accent box-border border border-[#00000000] hover:border-primary rounded-none"
                       >
                         <SidebarMenuButton
                           onClick={() => {
@@ -156,7 +156,9 @@ export function AppSidebar() {
           </Collapsible>
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="border border-t-border">Footer</SidebarFooter>
+      <SidebarFooter className="border border-t-border">
+        version 1.0.0
+      </SidebarFooter>
     </Sidebar>
   );
 }
