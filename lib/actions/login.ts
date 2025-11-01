@@ -1,3 +1,4 @@
+//eslint-disable-next-line @typescript-eslint/no-unused-vars
 "use server";
 import { supabase } from "@/lib/supabase";
 
